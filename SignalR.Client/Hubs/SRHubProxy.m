@@ -33,6 +33,7 @@
 @property (assign, nonatomic, readonly) id <SRHubConnectionInterface> connection;
 @property (strong, nonatomic, readonly) NSString *hubName;
 @property (strong, nonatomic, readonly) NSMutableDictionary *subscriptions;
+@property (strong, nonatomic, readonly) NSMutableSet *sinks;
 
 @end
 
@@ -46,6 +47,7 @@
         _connection = connection;
         _hubName = hubname;
         _subscriptions = [[NSMutableDictionary alloc] init];
+        _sinks = [[NSMutableSet alloc] init];
         _state = [[NSMutableDictionary alloc] init];
     }
     return self;
@@ -78,6 +80,28 @@
     return subscription;
 }
 
+- (void)addSink:(NSObject *)object {
+    if (object == nil) {
+        //TODO: Throw
+        return;
+    }
+
+    [_sinks addObject:object];
+}
+
+- (void)removeSink:(NSObject *)object {
+    if (object == nil) {
+        //TODO: Throw
+        return;
+    }
+
+    [_sinks removeObject:object];
+}
+
+- (void)removeAllSinks {
+    [_sinks removeAllObjects];
+}
+
 - (void)invokeEvent:(NSString *)eventName withArgs:(NSArray *)args {
     SRSubscription *eventObj = _subscriptions[eventName];
     if(eventObj != nil && eventObj.object != nil) {
@@ -97,7 +121,14 @@
             [invocation setArgument:&argument atIndex:arguementIndex];
         }
         [invocation invoke];
+        return;
     }
+
+    [_sinks enumerateObjectsUsingBlock:^(id sink, BOOL *stop) {
+        if ([sink respondsToSelector:@selector(invokeEvent:withArgs:)]) {
+            [sink invokeEvent:eventName withArgs:args];
+        }
+    }];
 }
 
 #pragma mark -

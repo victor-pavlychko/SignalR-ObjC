@@ -40,6 +40,25 @@
  */
 - (SRSubscription *)on:(NSString *)eventName perform:(NSObject *)object selector:(SEL)selector;
 
+/**
+ * Registers new event sink to handle all unhandled events
+ *
+ * @param object The receiver to handle all events
+ */
+- (void)addSink:(NSObject *)object;
+
+/**
+ * Unregisters new event sink to handle all unhandled events
+ *
+ * @param object The receiver to remove from list
+ */
+- (void)removeSink:(NSObject *)object;
+
+/**
+ * Removes all event sinks
+ */
+- (void)removeAllSinks;
+
 
 ///-------------------------------
 /// @name Publish
