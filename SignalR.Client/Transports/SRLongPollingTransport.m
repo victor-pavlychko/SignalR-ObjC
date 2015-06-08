@@ -122,6 +122,10 @@
     [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
         __strong __typeof(&*weakSelf)strongSelf = weakSelf;
         __strong __typeof(&*weakConnection)strongConnection = weakConnection;
+        
+        if (!strongSelf || !strongConnection || [strongConnection state] == disconnected) {
+            return;
+        }
 
         BOOL shouldReconnect = NO;
         BOOL disconnectedReceived = NO;
@@ -159,6 +163,10 @@
         __strong __typeof(&*weakSelf)strongSelf = weakSelf;
         __strong __typeof(&*weakConnection)strongConnection = weakConnection;
 
+        if (!strongSelf || !strongConnection || [strongConnection state] == disconnected) {
+            return;
+        }
+
         canReconnect = @(NO);
         
         // Transition into reconnecting state
@@ -173,6 +181,13 @@
             canReconnect = @(YES);
             
             [[NSBlockOperation blockOperationWithBlock:^{
+                __strong __typeof(&*weakSelf)strongSelf = weakSelf;
+                __strong __typeof(&*weakConnection)strongConnection = weakConnection;
+                
+                if (!strongSelf || !strongConnection || [strongConnection state] == disconnected) {
+                    return;
+                }
+                
                 [strongSelf poll:strongConnection connectionData:connectionData completionHandler:nil];
             }] performSelector:@selector(start) withObject:nil afterDelay:[strongSelf.errorDelay integerValue]];
             
@@ -195,6 +210,10 @@
             __strong __typeof(&*weakSelf)strongSelf = weakSelf;
             __strong __typeof(&*weakConnection)strongConnection = weakConnection;
             __strong __typeof(&*weakCanReconnect)strongCanReconnect = weakCanReconnect;
+
+            if (!strongSelf || !strongConnection || [strongConnection state] == disconnected) {
+                return;
+            }
 
             [strongSelf connectionReconnect:strongConnection canReconnect:strongCanReconnect];
             
